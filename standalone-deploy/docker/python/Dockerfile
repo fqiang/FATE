@@ -34,6 +34,7 @@ WORKDIR /fate
 ADD fate.tar /fate
 ADD docker-entrypoint.sh /fate
 ADD requirements.txt /fate
+ADD source_debian_buster.list /etc/apt/sources.list
 
 RUN rm /bin/sh && ln -sf /bin/bash /bin/sh
 
@@ -45,10 +46,14 @@ COPY docker-entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-RUN apt-get update && apt-get install libgmp3-dev -y && apt-get install -y libmpfr-dev libmpfr-doc libmpfr6 && apt-get install libmpc-dev -y
+ENV http_proxy  http://122.40.130.79:8080
+ENV https_proxy http://122.40.130.79:8080
+RUN export no_proxy=`cat /etc/hosts  | tail -1 | awk '{print $1}'`
+RUN apt-get update && apt-get install libgmp3-dev -y && apt-get install -y libmpfr-dev libmpfr-doc libmpfr6 && apt-get install libmpc-dev -y && apt-get install vim -y
 
 #RUN pip install -r requirements.txt -f ./pip-dependedocker ncies --no-index
-RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+RUN pip install --retries 100 --timeout 100 -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+#RUN cat requirements.txt | while read PACKAGE; do pip install -i https://pypi.tuna.tsinghua.edu.cn/simple "$PACKAGE"; done
 
 ENV PYTHONPATH /fate
 

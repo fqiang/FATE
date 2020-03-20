@@ -1,4 +1,5 @@
 ########################################################
+  cp /home/fqiang/software/third_party_eggrollv1.tar.gz FATE/cluster-deploy/packages/.
 # Copyright 2019-2020 program was created VMware, Inc. #
 # SPDX-License-Identifier: Apache-2.0                  #
 ########################################################
@@ -13,6 +14,9 @@ source_code_dir=$(cd `dirname ${WORKINGDIR}`; pwd)
 
 # fetch fate-python image
 source .env
+
+echo $HTTP_PROXY
+echo $HTTPS_PROXY
 
 # fetch package version
 source ${WORKINGDIR}/../cluster-deploy/scripts/default_configurations.sh
@@ -247,7 +251,7 @@ package() {
   eggroll_source_code_dir=${source_code_dir}/eggroll
   cd ${eggroll_source_code_dir}
   echo "[INFO] Compiling eggroll"
-  docker run --rm -u $(id -u):$(id -g) -v ${eggroll_source_code_dir}:/data/projects/fate/eggroll --entrypoint="" maven:3.6-jdk-8 /bin/bash -c "cd /data/projects/fate/eggroll && mvn clean package -DskipTests"
+  docker run --rm -u $(id -u):$(id -g) -v ${eggroll_source_code_dir}:/data/projects/fate/eggroll ${ICBC_DOCKER_PARAM} --entrypoint="" maven:3.6-jdk-8 /bin/bash -c "cd /data/projects/fate/eggroll && mvn clean package -DskipTests"
   echo "[INFO] Compile eggroll done"
 
   echo "[INFO] Packaging eggroll"
@@ -289,9 +293,9 @@ package() {
 
   echo "[INFO] Compiling fate"
   cd ${source_code_dir}/fateboard/
-  docker run --rm -u $(id -u):$(id -g) -v ${source_code_dir}/fateboard:/data/projects/fate/fateboard --entrypoint="" maven:3.6-jdk-8 /bin/bash -c "cd /data/projects/fate/fateboard && mvn clean package -DskipTests"
+  docker run --rm -u $(id -u):$(id -g) -v ${source_code_dir}/fateboard:/data/projects/fate/fateboard ${ICBC_DOCKER_PARAM} --entrypoint="" maven:3.6-jdk-8 /bin/bash -c "cd /data/projects/fate/fateboard && mvn clean package -DskipTests"
   cd ${source_code_dir}/arch/
-  docker run --rm -u $(id -u):$(id -g) -v ${source_code_dir}:/data/projects/fate --entrypoint="" maven:3.6-jdk-8 /bin/bash -c "cd /data/projects/fate/arch && mvn clean package -DskipTests"
+  docker run --rm -u $(id -u):$(id -g) -v ${source_code_dir}:/data/projects/fate ${ICBC_DOCKER_PARAM} --entrypoint="" maven:3.6-jdk-8 /bin/bash -c "cd /data/projects/fate/arch && mvn clean package -DskipTests"
   echo "[INFO] Compile fate done"
 
   echo "[INFO] Packaging fate"
@@ -306,6 +310,7 @@ package() {
   mv fate-proxy-${version}.tar.gz ${packages_dir}/
 
   echo "[INFO] Packaging base module"
+  cp /home/fqiang/software/third_party_eggrollv1.tar.gz ${packages_dir}/.
   get_module_package ${source_code_dir} "storage-service-cxx third-party" third_party_eggrollv1.tar.gz
   echo "[INFO] Package base module done"
   echo "[INFO] Package fate done"

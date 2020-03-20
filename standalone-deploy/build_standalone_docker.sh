@@ -18,10 +18,11 @@
 set -e
 set -x
 
+source .env
+
 basepath=$(cd `dirname $0`;pwd)
 fatepath=$(cd $basepath/..;pwd)
 cd ${fatepath}
-
 
 eggroll_git_url=`grep -A 3 '"eggroll"' .gitmodules | grep 'url' | awk -F '= ' '{print $2}'`
 eggroll_git_branch=`grep -A 3 '"eggroll"' .gitmodules | grep 'branch' | awk -F '= ' '{print $2}'`
@@ -80,7 +81,7 @@ cd ${fatepath}
 
 init() {
     cp -r arch federatedml workflow examples fate_flow research eggroll federatedrec ${basepath}
-    docker run -v ${fatepath}/fateboard:/data/projects/fate/fateboard  --entrypoint="" maven:3.6-jdk-8 /bin/bash -c "cd /data/projects/fate/fateboard && mvn clean package -DskipTests"
+    docker run -v ${fatepath}/fateboard:/data/projects/fate/fateboard ${ICBC_DOCKER_PARAM} --entrypoint="" maven:3.6-jdk-8 /bin/bash -c "cd /data/projects/fate/fateboard && mvn clean package -DskipTests"
     if [ ! -d "${basepath}/fateboard" ];then
        mkdir -p ${basepath}/fateboard
     fi
